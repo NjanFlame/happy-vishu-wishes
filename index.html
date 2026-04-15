@@ -820,15 +820,6 @@
                 <textarea id="customWish" placeholder="Write your personalized wish of blessing..."></textarea>
             </div>
 
-            <!-- Image Upload -->
-            <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
-                <div class="upload-icon">✦</div>
-                <div class="upload-text">Add Your Photo (Optional)</div>
-                <img class="upload-preview" id="uploadPreview" alt="Preview">
-                <span class="remove-image" id="removeImage">Remove Photo</span>
-                <input type="file" id="imageInput" accept="image/*">
-            </div>
-
             <button class="generate-btn" onclick="generateLink()">
                 ⋆ Generate Blessing Link ⋆
             </button>
@@ -855,9 +846,6 @@
 
         <div class="name-display">
             <p class="banner-text">Vishuashanam</p>
-            <div class="user-image-display" id="userImageDisplay">
-                <img id="displayImage" alt="User">
-            </div>
             <h1 id="displayName"></h1>
             <p class="wish-message" id="displayWish"></p>
         </div>
@@ -867,74 +855,15 @@
     <div class="footer-branding">Made by NjanFlame</div>
 
     <script>
-        // Image handling
-        let userImageData = null;
-
-        // Image upload handling
-        const imageInput = document.getElementById('imageInput');
-        const imageUploadArea = document.getElementById('imageUploadArea');
-        const uploadPreview = document.getElementById('uploadPreview');
-        const removeImage = document.getElementById('removeImage');
-
-        imageInput.addEventListener('change', handleImageSelect);
-
-        imageUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            imageUploadArea.classList.add('dragover');
-        });
-
-        imageUploadArea.addEventListener('dragleave', () => {
-            imageUploadArea.classList.remove('dragover');
-        });
-
-        imageUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            imageUploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                processImage(file);
-            }
-        });
-
-        removeImage.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeUserImage();
-        });
-
-        function handleImageSelect(e) {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                processImage(file);
-            }
-        }
-
-        function processImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                userImageData = e.target.result;
-                uploadPreview.src = userImageData;
-                imageUploadArea.classList.add('has-image');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeUserImage() {
-            userImageData = null;
-            imageInput.value = '';
-            uploadPreview.src = '';
-            imageUploadArea.classList.remove('has-image');
-        }
-
         // Check URL parameters on load
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name');
             const wish = urlParams.get('wish');
-            const img = urlParams.get('img');
             const from = urlParams.get('from');
 
             if (name) {
-                showAnimation(name, wish, img, from);
+                showAnimation(name, wish, from);
             } else {
                 createFloatingDecorations();
             }
@@ -975,18 +904,16 @@
                 return;
             }
 
-            // Encode parameters
+            // Encode parameters (without image to keep link short)
             const encodedName = encodeURIComponent(btoa(encodeURIComponent(name)));
             const encodedSender = sender ? encodeURIComponent(btoa(encodeURIComponent(sender))) : '';
             const encodedWish = wishInput.value.trim() ? encodeURIComponent(btoa(encodeURIComponent(wishInput.value.trim()))) : '';
-            const encodedImage = userImageData ? encodeURIComponent(btoa(userImageData.split(',')[1])) : '';
 
-            // Create link
+            // Create link (without image parameter for short URL)
             const baseUrl = window.location.origin + window.location.pathname;
             let link = `${baseUrl}?name=${encodedName}`;
             if (encodedSender) link += `&from=${encodedSender}`;
             if (encodedWish) link += `&wish=${encodedWish}`;
-            if (encodedImage) link += `&img=${encodedImage}`;
 
             resultLink.textContent = link;
             resultSection.classList.add('show');
@@ -1005,7 +932,7 @@
         }
 
         // Show animation view
-        function showAnimation(name, wish, img, from) {
+        function showAnimation(name, wish, from) {
             // Hide creator, show animation
             document.getElementById('creatorView').style.display = 'none';
             const animationView = document.getElementById('animationView');
@@ -1032,15 +959,6 @@
                 document.getElementById('displayWish').innerHTML = fullMessage;
             } else if (senderText) {
                 document.getElementById('displayWish').innerHTML = `<span style="font-size: clamp(12px, 2.5vw, 16px); opacity: 0.6;">${senderText}</span>`;
-            }
-
-            // Decode and display image
-            if (img) {
-                const decodedImage = 'data:image/jpeg;base64,' + decodeURIComponent(atob(decodeURIComponent(img)));
-                document.getElementById('displayImage').src = decodedImage;
-                document.getElementById('userImageDisplay').style.display = 'block';
-            } else {
-                document.getElementById('userImageDisplay').style.display = 'none';
             }
 
             // Start celebrations
